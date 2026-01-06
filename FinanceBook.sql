@@ -1,114 +1,170 @@
--- List schemes
+-- =========================
+-- DATABASE: LibroContable
+-- =========================
 
-SELECT * FROM sys.schemas;
+CREATE DATABASE LibroContable;
 GO
+
+USE LibroContable;
+GO
+
+-- =========================
+-- ROLES
+-- =========================
+CREATE TABLE tb_rol (
+    id_rol INT IDENTITY(1,1) PRIMARY KEY,
+    rol VARCHAR(50) NOT NULL
+);
+
+-- =========================
+-- SEEDERS
+-- =========================
+CREATE TABLE tb_tipo_ingreso (
+    id_tipo_ingreso INT IDENTITY(1,1) PRIMARY KEY,
+    tipo_ingreso VARCHAR(50) NOT NULL
+);
+
+-- Nacional / Extrangera o DIMEX
+CREATE TABLE tb_tipo_cedula (
+    id_tipo_cedula INT IDENTITY(1,1) PRIMARY KEY,
+    tipo_cedula VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE tb_tipo_gasto (
+    id_tipo_gasto INT IDENTITY(1,1) PRIMARY KEY,
+    tipo_gasto VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE tb_clasificacion_gasto (
+    id_clasificacion_gasto INT IDENTITY(1,1) PRIMARY KEY,
+    clasificacion_gasto VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE tb_clasificacion_transaccion (
+    id_clasificacion_transaccion INT IDENTITY(1,1) PRIMARY KEY,
+    clasificacion VARCHAR(50) NOT NULL
+);
+
+-- =========================
+-- PADRON
+-- =========================
+CREATE TABLE tb_padron (
+    id_padron INT IDENTITY(1,1) PRIMARY KEY,
+	nombre VARCHAR(100) NOT NULL,
+    primer_apellido VARCHAR(100) NOT NULL,
+	segundo_apellido VARCHAR(100) NOT NULL,
+    identificacion VARCHAR(100) NOT NULL UNIQUE,
+	id_tipo_cedula INT not null,
+    fecha_inscripcion DATE NOT NULL DEFAULT GETDATE(),
+    telefono VARCHAR(30) NOT NULL,
+    direccion VARCHAR(250) NOT NULL,
+    correo VARCHAR(100) NOT NULL,
+    id_rol INT NOT NULL,
+    CONSTRAINT fk_padron_rol 
+      FOREIGN KEY (id_rol) REFERENCES tb_rol(id_rol),
+	CONSTRAINT fk_tipo_cedula 
+      FOREIGN KEY (id_tipo_cedula) REFERENCES tb_tipo_cedula(id_tipo_cedula)
+);
+
+-- =========================
+-- ASISTENCIA
+-- =========================
+CREATE TABLE tb_asistencia (
+    id_asistencia INT IDENTITY(1,1) PRIMARY KEY,
+    id_padron INT NOT NULL,
+    fecha DATE NOT NULL DEFAULT GETDATE(),
+    asistio BIT NOT NULL,
+    CONSTRAINT fk_asistencia_padron 
+        FOREIGN KEY (id_padron) REFERENCES tb_padron(id_padron)
+);
+
+-- =========================
+-- RESERVAS DEL SALON
+-- =========================
+CREATE TABLE tb_reserva_salon (
+    id_reserva INT IDENTITY(1,1) PRIMARY KEY,
+    id_padron INT NOT NULL,
+    evento VARCHAR(150) NOT NULL,
+    horas INT NOT NULL,
+    detalle VARCHAR(MAX),
+    CONSTRAINT fk_reserva_padron 
+        FOREIGN KEY (id_padron) REFERENCES tb_padron(id_padron)
+);
+
+-- =========================
+-- FACTURA ELECTRONICA
+-- =========================
+CREATE TABLE tb_factura_electronica (
+    id_factura_electronica INT IDENTITY(1,1) PRIMARY KEY,
+    factura_electronica VARCHAR(MAX) NOT NULL
+);
+
+
+-- =========================
+-- LIBRO TESORERIA
+-- =========================
+CREATE TABLE tb_libro_tesoreria (
+    id_libro_tesoreria INT IDENTITY(1,1) PRIMARY KEY,
+    numero_documento VARCHAR(50) NOT NULL,
+    acta VARCHAR(100),
+    saldo DECIMAL(18,2) NOT NULL,
+    mes_actual DATE NOT NULL,
+    justificacion_gasto VARCHAR(MAX) NULL,
+    id_tipo_ingreso INT NOT NULL,
+    id_clasificacion_transaccion INT NOT NULL,
+    id_tipo_gasto INT NULL,
+    id_factura_electronica INT NULL,
+    id_clasificacion_gasto INT NULL,
+    id_padron INT NOT NULL,
+    CONSTRAINT fk_libro_padron 
+        FOREIGN KEY (id_padron) REFERENCES tb_padron(id_padron),
+    CONSTRAINT fk_libro_tipo_ingreso 
+        FOREIGN KEY (id_tipo_ingreso) REFERENCES tb_tipo_ingreso(id_tipo_ingreso),
+    CONSTRAINT fk_libro_clas_trans 
+        FOREIGN KEY (id_clasificacion_transaccion) REFERENCES tb_clasificacion_transaccion(id_clasificacion_transaccion),
+    CONSTRAINT fk_libro_tipo_gasto 
+        FOREIGN KEY (id_tipo_gasto) REFERENCES tb_tipo_gasto(id_tipo_gasto),
+    CONSTRAINT fk_libro_factura 
+        FOREIGN KEY (id_factura_electronica) REFERENCES tb_factura_electronica(id_factura_electronica),
+    CONSTRAINT fk_libro_clas_gasto 
+        FOREIGN KEY (id_clasificacion_gasto) REFERENCES tb_clasificacion_gasto(id_clasificacion_gasto)
+);
+
+-- =========================
+-- BILLETERA
+-- =========================
+CREATE TABLE tb_billetera (
+    id_billetera INT IDENTITY(1,1) PRIMARY KEY,
+    saldo_billetera DECIMAL(18,2) NOT NULL,
+    mes_actual DATE NOT NULL,
+    justificacion_gasto VARCHAR(MAX) NULL
+);
 
 /*
 
-The error "CREATE SCHEMA' must be the only statement in the batch" occurs in SQL Server (T-SQL) because certain Data 
-Definition Language (DDL) statements, including CREATE SCHEMA, must be compiled and executed in their own separate batch. 
+El objetivo que exista transacciones es para poder auditar los movimientos entre el Wallet y el libro contable, la idea es crear un
+store procedure que haga:
 
-Solution: ensure the CREATE SCHEMA statement is isolated
+-- insert auditorÃ­a
+-- update libro
+-- update wallet
+
 */
 
--- Create Schemes
-
-CREATE SCHEMA Mono;
-GO
-
-tb_rol:
-
-id_rol
-rol
-
-tb_libro_tesoreria
-
-id_libro_tesoreria
-numero_documento (string) 
-acta (string)
-saldo (decimal)
-mes_actual (date)
-tipo_ingreso (fk)
-id_clasificacion_transaccion (fk)
-id_tipo_gasto (fk)
-id_factura_electronica (fk)
-id_tipo_ingreso (fk)
-id_clasificacion_gasto (fk)
-
--- Auditar los movimientos que se hacen entre el libro y el wallet
-tb_transaccion
-id_transaccion
-id_billetera
-tipo_ingreso (fk hacia id_tipo_ingreso)
-saldo (fk hacia id_libro_tesoreria)
-gestion -- Este es el dinero que se esta manipulando
-fecha_creacion
-
-billetera
-id_billetera
-saldo_actual
-
--- Sirve para ingreso, egreso, retorno (aqui abarca el requerimiento de "el wallet debe quedar en 0", creando un Job que cada mes devuelva a la tabla principal PERO me va auditar el retorno)
-tb_tipo_ingreso
-id_tipo_ingreso
-tipo_ingreso
-
--- Esto son los tags
-tb_tipo_ingreso
-id_tipo_ingreso
-tipo_ingreso
-
-tb_factura_electronica
-id_factura_electronica (pk)
-factura_electronica
-
-tb_tipo_gasto
-id_tipo_gasto
-tipo_gasto 
-
-tb_clasificacion_gasto
-id_clasificacion_gasto
-clasificacion_gasto
-
-tb_clasificacion_transaccion
-id_clasificacion_transaccion 
-clasificacion
-
-Libro contable de gastos en efectivo misma funcionalidad del libro mayor (Wallet)
-
-Esta wallet a final de mes debe de cerrar en 0.
-
-Modificable solo por admin & Tesoreria.
-
-Entidad de provedor / cliente, esto esta relacionado a los ingresos e egresos del libro contable.
-
-El que es cliente puede ser provedor, y el que es provedor puede ser cliente. Cuando yo creo un ingreso, no me limite registrar al usuario on behalf de esa transacción solo como cliente o provedor si no que pueden ser ambas. 
-
-Actualizacion del Padron
-
-Apellidos, nombre, cedula, acta de inscripcion, fecha, estado, Contacto telefono, direccion y correo,
-
-
-Tabla de asistencia (Como Colegio)
-
-fk del padron, donde obtenemos a ese usuario y lo relacionamos al registro.
-
-Mas de 3 ausencias a un miembro del padron lo desactiva el sistema.
-
-Actas de sistema: Registro de meetings.
-
-titulo
-fecha
-persona que lo escribió (este usuario no tiene relación hacia ningún lado)
-descripción
-estado
-
-Visualizar reservas del salon, la idea es que la junta directiva que calibre con el sr que lo cuida de cual es la disponibilidad. 
-
-Quien lo alquilo
-evento
-horas 
-detalle
-
-Justificación del gasto: 50 mil colones en servicio de mantenimiento.
-
+-- =========================
+-- TRANSACCIONES (AUDITORIA)
+-- =========================
+CREATE TABLE tb_transaccion (
+    id_transaccion INT IDENTITY(1,1) PRIMARY KEY,
+    id_billetera INT NOT NULL,
+    id_tipo_ingreso INT NOT NULL,
+    id_libro_tesoreria INT NOT NULL,
+    gestion DECIMAL(18,2) NOT NULL,
+    fecha_creacion DATETIME NOT NULL DEFAULT GETDATE(),
+    CONSTRAINT fk_trans_billetera 
+        FOREIGN KEY (id_billetera) REFERENCES tb_billetera(id_billetera),
+    CONSTRAINT fk_trans_tipo_ingreso 
+        FOREIGN KEY (id_tipo_ingreso) REFERENCES tb_tipo_ingreso(id_tipo_ingreso),
+    CONSTRAINT fk_trans_libro 
+        FOREIGN KEY (id_libro_tesoreria) REFERENCES tb_libro_tesoreria(id_libro_tesoreria)
+);
