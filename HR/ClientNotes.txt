@@ -1,0 +1,23 @@
+NO ES UN SISTEMA DE HR
+
+Finalidad: 
+
+Empleados
+
+1. Control de la gente que esta chambeando (quien ingreso, cuando ingreso, fecha de ingreso, fecha de despido)
+2. Dentro de la info del empleado, quiero saber el departamento, el supervisor, el horario, el estado del empleado (contratado/despedido/vacaciones). Detalles del empleado, (nombre del puesto, salario, departamento que permanece y fecha de inicio a fecha de final, detalles de permanencia (aquí se puede flagear si ese usuario no es contratable)) teniendo en cuenta que quiero conocer todos los puestos en el cual ha estado este empleado. 
+3. Info empleado (nombre, apellido, nacimiento, cedula, estado civil, genero, correo empresarial y correo personal). Pais donde vive ya que viene de todo el mundo, contacto de la persona (detalles de contacto, como contacto de emergencia). 
+
+Ofertas
+
+4. Crear nuevas posiciones, nombre de puesto, requerimiento, detalles del puesto, fecha de apertura, fecha de finalización, control de todos los candidatos que se están incluyendo en una posición. Estado de la aplicación, que si esta en proceso de entrevista, con HR, con tech lead, etc. (Paso a paso). Tabla de aplicante, nombre de la persona, about, experiencia profesional, educación, habilidades. (Poder filtrar entre filtros para ver cuales llegaron mas largo, asi para después llamar a los mejores candidatos cuando se abra un puesto, historial de candidatos (entiéndalo asi pero no es un historial directamente, si no un reporte))
+5. Creación de oferta laboral, (internamente) asi se va poder ver todos los detalles previamente (requisitos, responsabilidades.
+
+Consideración: empleados internos (Solo HR, la idea es que luego la gente pueda aplicar externos) y usuarios externos pueden concursar a un puesto. (ambos pasan a ser candidatos). 
+
+OJO: Cuando un candidato vuelve a aplicar, se va actualizar su información. (asi luego puedan hacer un select de las personas que tengan x habilidades)
+
+Futuro: Los usuarios puedan tener un perfil con toda su información. 
+Empleado / Aplicante / HR (id_rol)
+
+Jerarquia
